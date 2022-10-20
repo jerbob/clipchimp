@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Inter:wght@400;500;600;800&display=swap');
+
+html, body, #ultra, main {
+  height: 100%;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+}

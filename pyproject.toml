@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "clip-downloader-backend"
+version = "0.1.0"
+description = "API backend for a youtube clip downloader."
+authors = ["Jeremiah Boby <mail@jeremiahboby.me>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "src/clip_downloader"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+gunicorn = "^20.1.0"
+uvicorn = {extras = ["standard"], version = "^0.19.0"}
+fastapi = "^0.85.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
