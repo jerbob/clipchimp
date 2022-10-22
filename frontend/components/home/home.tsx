@@ -8,6 +8,8 @@ import styleSheet from "./home.scss.js";
 function ExtensionMapping() {
   useStyleSheet(styleSheet);
 
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
   useEffect(() => {
     const style = {
       width: "400px",
@@ -26,6 +28,7 @@ function ExtensionMapping() {
     });
   }, []);
 
+  const [downloadButton, setDownloadButton] = useState({text: "Download clip"});
   const [formData, setFormData] = useState({url: "", start: "", end: ""});
 
   function handleStartUpdate(event) {
@@ -45,15 +48,36 @@ function ExtensionMapping() {
         setFormData({url: response.url, start: response.start, end: response.end})
       }
   )
-    console.log(formData)
   }
   function handleSubmit(event) {
+    setDownloadButton({text: "Loading..."});
     event.preventDefault();
     fetch(
       "/api/download?" + new URLSearchParams(
         {url: formData.url, start: formData.start, end: formData.end}
       )
-    ).then((response) => response.json()).then(console.log)
+    ).then((response) => response.json()).then((downloadTask) => {
+      if (downloadTask.status == "PENDING" || downloadTask.status == "SUCCESS") {
+        window.downloadCompleted = false;
+        setInterval(
+          () => {
+            if (window.downloadCompleted) {
+              return
+            }
+            fetch(
+              "/api/status?" + new URLSearchParams(
+                {task: downloadTask.id}
+              )
+            ).then((response) => response.json()).then((downloadStatus) => {
+              if (downloadStatus.status == "SUCCESS") {
+                window.downloadCompleted = true;
+                setDownloadButton({text: "Download clip"});
+                window.location = downloadStatus.download
+              }
+            })
+          }, 1000)
+        }
+      })
   }
 
   return (
@@ -83,7 +107,7 @@ function ExtensionMapping() {
               <input type="text" id="end" name="end" placeholder="0:00:00" onChange={handleEndUpdate} value={formData.end} />
             </div>
           </div>
-          <input type="submit" value="Download clip" id="download" />
+          <input type="submit" value={downloadButton.text} id="download" />
         </form>
       </div>
 
