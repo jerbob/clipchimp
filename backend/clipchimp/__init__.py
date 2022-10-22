@@ -1,83 +1,49 @@
-from typing import List
+import re
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from celery.result import AsyncResult
+from fastapi import FastAPI
+
+from clipchimp import tasks
+from clipchimp.models import DownloadParameters
+
+
+ZERO_SECONDS = "0:00:00"
+DELTA_PATTERN = re.compile(r"(\d+:)?(\d+:)?\d+")
 
 app = FastAPI()
 
-html = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat</h1>
-        <h2>Your ID: <span id="ws-id"></span></h2>
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
-        <script>
-            var client_id = Date.now()
-            document.querySelector("#ws-id").textContent = client_id;
-            var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
-            ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
-            };
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
-            }
-        </script>
-    </body>
-</html>
-"""
+
+@app.get("/api/validate")
+async def validate(
+    url: str,
+    start: str = ZERO_SECONDS,
+    end: str = ZERO_SECONDS,
+) -> dict:
+    """Validate the provided parameters and return a normalised URL."""
+    # Ensure that the provided start and end are valid
+    if not (DELTA_PATTERN.match(start)):
+        start = ZERO_SECONDS
+    if not (DELTA_PATTERN.match(end)):
+        end = ZERO_SECONDS
+    return DownloadParameters(clip_url=url, start=start, end=end).json()  # type: ignore
 
 
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
+@app.get("/api/download")
+async def download(
+    url: str,
+    start: str = ZERO_SECONDS,
+    end: str = ZERO_SECONDS,
+) -> dict:
+    """Queue up a download for the provided video segment and return an ID."""
+    params = DownloadParameters(clip_url=url, start=start, end=end)  # type: ignore
+    result = tasks.download_segment.apply_async(
+        (params.url, str(params.start), str(params.end)), task_id=params.id
+    )
+    return {"status": result.state, "id": params.id}
 
 
-manager = ConnectionManager()
-
-
-@app.get("/")
-async def get():
-    return HTMLResponse(html)
-
-
-@app.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: int):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.broadcast(f"Client #{client_id} says: {data}")
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        await manager.broadcast(f"Client #{client_id} left the chat")
+@app.get("/api/status")
+async def status(task: str) -> dict:
+    """Given a task ID, check on progress of the download."""
+    result = AsyncResult(task, app=tasks.app).result
+    return {"status": result}

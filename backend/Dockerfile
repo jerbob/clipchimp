@@ -6,16 +6,16 @@ ENV PYTHONUNBUFFERED=1 \
   PATH=/root/.local/bin:${PATH}
 
 RUN set -ex \
-  && apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/* \
+  && apt-get update && apt-get install -y curl ffmpeg && rm -rf /var/lib/apt/lists/* \
   && curl -sSL 'https://install.python-poetry.org' | python \
   && poetry config virtualenvs.create false
 
 COPY poetry.lock pyproject.toml /app/
-WORKDIR /app
+WORKDIR /app/src
 
 RUN poetry install --no-root --no-interaction --no-dev
 
-COPY src /app/src/
+COPY . /app/src/
 
 CMD "gunicorn" \
   "--reload" \

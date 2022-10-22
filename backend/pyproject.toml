@@ -1,21 +1,29 @@
 [tool.poetry]
-name = "clip-downloader-backend"
+name = "clipchimp"
 version = "0.1.0"
 description = "API backend for a youtube clip downloader."
 authors = ["Jeremiah Boby <mail@jeremiahboby.me>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "src/clip_downloader"}]
+packages = [{include = "clipchimp"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 gunicorn = "^20.1.0"
 uvicorn = {extras = ["standard"], version = "^0.19.0"}
 fastapi = "^0.85.1"
-
+requests = "^2.28.1"
+youtube_dl = "*"
+pydantic = "^1.10.2"
+innertube = "^2.1.0"
+requests-html = {git = "https://github.com/psf/requests-html.git", rev = "026c4e5217cfc8347614148aab331d81402f596b"}
+celery = {extras = ["redis"], version = "^5.2.7"}
+ffmpeg-python = "^0.2.0"
+nest-asyncio = "^1.5.6"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.5.0"
+black = "^22.10.0"
 
 [build-system]
 requires = ["poetry-core"]
