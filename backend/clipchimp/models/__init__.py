@@ -1,64 +1,45 @@
-import asyncio
 import hashlib
-import json
 import logging
 import re
-from concurrent import futures
-from dataclasses import InitVar, field
 from datetime import timedelta
 
-import nest_asyncio
-from requests_html import AsyncHTMLSession
+import yt_dlp
 from pydantic.dataclasses import dataclass
 
 from clipchimp import logic
 
 
-CLIP_URL_PATTERN = re.compile(r"/clip/(.*)/?")
+CLIP_URL_PATTERN = re.compile(r"/clip/([^/?]*)/?")
 
-nest_asyncio.apply()
-
-session = AsyncHTMLSession()
 logger = logging.getLogger("gunicorn.error")
-
-event_loop = asyncio.get_event_loop()
 
 
 @dataclass
 class DownloadParameters:
-    clip_url: InitVar[str]
-
+    url: str = ""
     start: timedelta = timedelta()
     end: timedelta = timedelta()
-    url: str = ""
+    download_from: str = ""
 
-    errors: list = field(default_factory=list)
-    metadata: dict = field(default_factory=dict)
-
-    def __post_init_post_parse__(self, clip_url: str) -> None:
-        """Ensure that parameters are valid before extracting start and end."""
-        self.url = clip_url
-        if not logic.is_supported(clip_url):
-            self.errors.append("This URL is not supported.")
+    def __post_init_post_parse__(self) -> None:
+        """
+        Ensure that parameters are valid and normalise the URL before extracting timestamps.
+        """
+        url = self.url
+        try:
+            metadata = logic.get_ytdl_metadata(url)
+        except yt_dlp.utils.DownloadError:
             return
+        self.download_from = metadata["url"]
 
-        metadata = self.metadata = logic.get_ytdl_metadata(clip_url)
         # If a timestamped video link was given, use that start time
-        self.start = timedelta(seconds=metadata.get("start_time", 0))
-        if metadata.get("extractor") == "youtube":
-            self.url = f"https://youtu.be/{metadata['id']}"
+        if not self.start:
+            self.start = timedelta(seconds=metadata.get("start_time", 0))
+        # Default the end timestamp to the end of the video
         if not self.end:
             self.end = timedelta(seconds=metadata.get("duration", 0))
-        if not (match := CLIP_URL_PATTERN.search(clip_url)):
+        if not (match := CLIP_URL_PATTERN.search(url)):
             return
-
-        # Extra processing for youtube clips
-        coroutine = logic.get_clip_config(
-            session=session, clip_url=clip_url, clip_id=match.group(1)
-        )
-        clip_metadata = event_loop.run_until_complete(coroutine)
-        self.start = timedelta(milliseconds=clip_metadata.get("startTimeMs", 0))
-        self.end = timedelta(milliseconds=clip_metadata.get("endTimeMs", 0))
 
     @property
     def id(self) -> str:
@@ -66,4 +47,6 @@ class DownloadParameters:
         return hashlib.md5(f"{self.url}{self.start}{self.end}".encode()).hexdigest()
 
     def json(self) -> dict:
-        return dict(url=self.url, start=str(self.start), end=str(self.end))
+        end, *_ = str(self.end).partition(".")
+        start, *_ = str(self.start).partition(".")
+        return dict(url=self.url, start=start, end=end)
