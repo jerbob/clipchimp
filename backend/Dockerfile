@@ -4,9 +4,10 @@ ENV PYTHONUNBUFFERED=1 \
   PIP_NO_CACHE_DIR=off \
   PYTHONPYCACHEPREFIX=/tmp \
   PATH=/root/.local/bin:${PATH}
-
 RUN set -ex \
-  && apt-get update && apt-get install -y curl ffmpeg && rm -rf /var/lib/apt/lists/* \
+  && apt-get update \
+  && apt-get install -y curl ffmpeg \
+  && rm -rf /var/lib/apt/lists/* \
   && curl -sSL 'https://install.python-poetry.org' | python \
   && poetry config virtualenvs.create false
 
