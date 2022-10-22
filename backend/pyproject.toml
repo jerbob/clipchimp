@@ -13,14 +13,13 @@ gunicorn = "^20.1.0"
 uvicorn = {extras = ["standard"], version = "^0.19.0"}
 fastapi = "^0.85.1"
 requests = "^2.28.1"
-youtube_dl = "*"
 pydantic = "^1.10.2"
-innertube = "^2.1.0"
-requests-html = {git = "https://github.com/psf/requests-html.git", rev = "026c4e5217cfc8347614148aab331d81402f596b"}
 celery = {extras = ["redis"], version = "^5.2.7"}
 httpx = {extras = ["http2"], version = "^0.23.0"}
 hyperframe = {git = "https://github.com/python-hyper/hyperframe.git", rev = "554fcad68beffae57dc8335ed5e02c177bfd6000"}
 h2 = {git = "https://github.com/python-hyper/h2.git", rev = "63b6b97e691334464a57f933bfd7ed444f364708"}
+yt-dlp = {git = "https://github.com/yt-dlp/yt-dlp.git"}
+redis-lru = "^0.1.2"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.5.0"
