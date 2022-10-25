@@ -20,11 +20,15 @@ class DownloadParameters:
     start: timedelta = timedelta()
     end: timedelta = timedelta()
     download_from: str = ""
+    post_process: bool = True
 
     def __post_init_post_parse__(self) -> None:
         """
         Ensure that parameters are valid and normalise the URL before extracting timestamps.
         """
+        if not self.post_process:
+            # Allow us to instantiate without processing
+            return
         url = self.url
         try:
             metadata = logic.get_ytdl_metadata(url)
