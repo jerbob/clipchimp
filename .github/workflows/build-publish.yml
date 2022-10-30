@@ -1,0 +1,28 @@
+name: Build and publish to GHCR
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Get version name
+      shell: bash
+      run: echo "##[set-output name=name;]`echo ${GITHUB_REF#refs/tags/}`"
+      id: branch
+
+    - name: Build container
+      run: docker build -t ghcr.io/jerbob/clipchimp:${{ steps.branch.outputs.name }} -t ghcr.io/jerbob/clipchimp:latest backend
+
+    - name: Login to GHCR
+      run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u jerbob --password-stdin
+
+    - name: Push to GHCR
+      run: |
+          docker push ghcr.io/jerbob/clipchimp:${{ steps.branch.outputs.name }}
+          docker push ghcr.io/jerbob/clipchimp:latest
