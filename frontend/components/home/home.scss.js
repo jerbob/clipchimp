@@ -1,6 +1,48 @@
 import scss from "https://tfl.dev/@truffle/utils@~0.0.3/css/css.ts";
 
 export default scss`
+.error-field {
+  border: 2px solid #F34444 !important;
+}
+
+.error-message {
+  top: -1.5rem;
+  position: relative;
+  font-family: 'Inter';
+  font-size: 0.8rem;
+  color: #F34444;
+  bottom: 0;
+  margin-bottom: -1.4rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.loader {
+  border: 0.5rem solid #FFC7DB; /* Light grey */
+  border-top: 0.5rem solid #F8669B; /* Blue */
+  border-radius: 50%;
+  width: 4rem;
+  height: 4rem;
+  animation: spin 2s linear infinite;
+  opacity: 1 !important;
+  float: right;
+  position: absolute;
+  z-index: 999;
+  left: 48vw;
+  top: 32rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-form > * {
+  opacity: 0.4;
+}
+
 .c-home {
   display: block;
   margin-left: 34vw;
@@ -43,7 +85,7 @@ export default scss`
   margin-bottom: 1.5rem;
 }
 
-#url, #start, #end, #download {
+#url, #start, #end, #download, #download-link {
   width: 100%;
   margin-bottom: 2rem;
   font-family: 'Inter';
@@ -55,6 +97,8 @@ export default scss`
   background: #F2F2F2;
   padding: 0.8rem;
   border-radius: 0.3rem;
+  outline: none !important;
+  text-decoration: none;
 }
 
 #url {
@@ -68,6 +112,7 @@ export default scss`
 
 #start, #end {
   margin-top: 0.2rem;
+  margin-bottom: 1.2rem;
 }
 
 #start {
@@ -81,7 +126,7 @@ export default scss`
   margin-right: 0.3rem;
 }
 
-#download {
+#download, #download-link {
   background-image: linear-gradient(90.73deg, #EEB467 2.74%, #F8639C 100%);
   font-family: 'Inter';
   font-style: normal;
@@ -89,6 +134,7 @@ export default scss`
   color: #363636;
   font-size: 1rem;
   margin-bottom: 0.2rem;
+  margin-top: 1rem;
 }
 
 a {
@@ -149,4 +195,41 @@ label {
   content: "";
   display: table;
   clear: both;
+}
+
+.modal {
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
 }`
