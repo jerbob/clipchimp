@@ -4,6 +4,7 @@ ENV PYTHONUNBUFFERED=1 \
   PIP_NO_CACHE_DIR=off \
   PYTHONPYCACHEPREFIX=/tmp \
   PATH=/root/.local/bin:${PATH}
+
 RUN set -ex \
   && apt-get update \
   && apt-get install -y curl ffmpeg \
