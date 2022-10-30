@@ -1,5 +1,4 @@
 import contextlib
-import functools
 import json
 import logging
 import os
