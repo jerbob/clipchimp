@@ -2,9 +2,10 @@ import hashlib
 import logging
 import re
 from datetime import timedelta
+from typing import Dict
 
 import yt_dlp
-from pydantic.dataclasses import dataclass
+from pydantic import validate_model, BaseModel, Field
 
 from clipchimp import logic
 
@@ -14,36 +15,43 @@ CLIP_URL_PATTERN = re.compile(r"/clip/([^/?]*)/?")
 logger = logging.getLogger("gunicorn.error")
 
 
-@dataclass
-class DownloadParameters:
+class DownloadParameters(BaseModel):
+    """Model representing form fields for a video download."""
+
     url: str = ""
     start: timedelta = timedelta()
     end: timedelta = timedelta()
     download_from: str = ""
     post_process: bool = True
+    errors: dict = Field(default_factory=dict)
+
+    def __init__(self, **data) -> None:
+        """Catch validation errors and store them."""
+        errors: Dict[str, str] = {}
+        if exception := validate_model(DownloadParameters, data)[2]:
+            for error in exception.errors():
+                field = str(error["loc"][0])
+                errors[field] = error["msg"].capitalize()
+            data.clear()
+        return super().__init__(**data, errors=errors)
 
     def __post_init_post_parse__(self) -> None:
-        """
-        Ensure that parameters are valid and normalise the URL before extracting timestamps.
-        """
+        """Ensure that parameters are valid before extracting timestamps."""
         if not self.post_process:
             # Allow us to instantiate without processing
             return
-        url = self.url
         try:
-            metadata = logic.get_ytdl_metadata(url)
+            metadata = logic.get_ytdl_metadata(self.url)
         except yt_dlp.utils.DownloadError:
+            self.errors["url"] = "Invalid video url"
             return
         self.download_from = metadata["url"]
-
         # If a timestamped video link was given, use that start time
         if not self.start:
             self.start = timedelta(seconds=metadata.get("start_time", 0))
         # Default the end timestamp to the end of the video
         if not self.end:
             self.end = timedelta(seconds=metadata.get("duration", 0))
-        if not (match := CLIP_URL_PATTERN.search(url)):
-            return
 
     @property
     def id(self) -> str:
@@ -51,6 +59,13 @@ class DownloadParameters:
         return hashlib.md5(f"{self.url}{self.start}{self.end}".encode()).hexdigest()
 
     def json(self) -> dict:
-        end, *_ = str(self.end).partition(".")
-        start, *_ = str(self.start).partition(".")
-        return dict(url=self.url, start=start, end=end)
+        """Construct a JSON object for API responses."""
+        response = {}
+        for field in ("url", "start", "end"):
+            message = self.errors.get(field, "")
+            response[field] = dict(
+                error=bool(message),
+                message=message,
+                value=getattr(self, field),
+            )
+        return response
