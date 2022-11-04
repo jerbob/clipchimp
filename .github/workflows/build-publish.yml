@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-backend:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -21,3 +21,20 @@ jobs:
       run: |
           docker push ghcr.io/jerbob/clipchimp:${GITHUB_SHA}
           docker push ghcr.io/jerbob/clipchimp:latest
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build container
+      run: docker build -t ghcr.io/jerbob/clipchimp-frontend:${GITHUB_SHA} -t ghcr.io/jerbob/clipchimp-frontend:latest frontend
+
+    - name: Login to GHCR
+      run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u jerbob --password-stdin
+
+    - name: Push to GHCR
+      run: |
+          docker push ghcr.io/jerbob/clipchimp-frontend:${GITHUB_SHA}
+          docker push ghcr.io/jerbob/clipchimp-frontend:latest
