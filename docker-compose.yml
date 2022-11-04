@@ -1,42 +1,86 @@
 version: "3.8"
 
 
-x-backend-services: &backend-service
+x-backend-service: &backend-service
   # Common options for backend services
-  build: backend
-  volumes:
-    - downloads:/downloads/
-    - ./backend:/app/src
   environment:
     - REDIS_PORT=6379
     - REDIS_HOST=redis
 
+x-frontend-service: &frontend-service
+  # Common options for remote and local frontend services
+  ports:
+    - 24678:24678
+  volumes:
+    - ./frontend:/app/src
+
+x-nginx-service: &nginx-service
+  # Common options for remote and local nginx instances
+  build: nginx
+  ports:
+    - 8000:80
+  volumes:
+    - downloads:/downloads/
+
 
 services:
-
-  frontend:
+  frontend-local:
+    profiles: ["local"]
+    <<: *frontend-service
     build: frontend
-    ports:
-      - 24678:24678
+
+  backend-local:
+    profiles: ["local"]
+    <<: *backend-service
+    build: backend
     volumes:
-      - ./frontend:/app/src
+      - downloads:/downloads/
+      - ./backend:/app/src
 
-  backend:
+  celery-local:
+    profiles: ["local"]
     <<: *backend-service
-
-  celery:
-    <<: *backend-service
+    build: backend
     command: celery -A clipchimp.tasks worker -l info
+    volumes:
+      - downloads:/downloads/
+      - ./backend:/app/src
+
+  frontend-remote:
+    profiles: ["remote"]
+    <<: *frontend-service
+    image: ghcr.io/jerbob/clipchimp-frontend:latest
+
+  backend-remote:
+    profiles: ["remote"]
+    <<: *backend-service
+    image: ghcr.io/jerbob/clipchimp:latest
+    volumes:
+      - downloads:/downloads/
+
+  celery-remote:
+    profiles: ["remote"]
+    <<: *backend-service
+    image: ghcr.io/jerbob/clipchimp:latest
+    volumes:
+      - downloads:/downloads/
 
   redis:
     image: redis:5
 
-  nginx:
-    build: nginx
-    ports:
-      - 8000:80
-    volumes:
-      - downloads:/downloads/
+  nginx-local:
+    profiles: ["local"]
+    <<: *nginx-service
+    environment:
+      - BACKEND_HOST=backend-local
+      - FRONTEND_HOST=frontend-local
+
+  nginx-remote:
+    profiles: ["remote"]
+    <<: *nginx-service
+    environment:
+      - BACKEND_HOST=backend-remote
+      - FRONTEND_HOST=frontend-remote
 
 
 volumes:
