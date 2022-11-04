@@ -2,25 +2,20 @@ version: "3.8"
 
 
 x-backend-service: &backend-service
-  # Common options for backend services
   environment:
     - REDIS_PORT=6379
     - REDIS_HOST=redis
 
 x-frontend-service: &frontend-service
-  # Common options for remote and local frontend services
   ports:
     - 24678:24678
-  volumes:
-    - ./frontend:/app/src
 
 x-nginx-service: &nginx-service
-  # Common options for remote and local nginx instances
   build: nginx
   ports:
     - 8000:80
   volumes:
-    - downloads:/downloads/
+    - downloads:/downloads
 
 
 services:
@@ -28,13 +23,15 @@ services:
     profiles: ["local"]
     <<: *frontend-service
     build: frontend
+    volumes:
+      - ./frontend:/app/src
 
   backend-local:
     profiles: ["local"]
     <<: *backend-service
     build: backend
     volumes:
-      - downloads:/downloads/
+      - downloads:/downloads
       - ./backend:/app/src
 
   celery-local:
@@ -43,7 +40,7 @@ services:
     build: backend
     command: celery -A clipchimp.tasks worker -l info
     volumes:
-      - downloads:/downloads/
+      - downloads:/downloads
       - ./backend:/app/src
 
   frontend-remote:
@@ -56,14 +53,14 @@ services:
     <<: *backend-service
     image: ghcr.io/jerbob/clipchimp:latest
     volumes:
-      - downloads:/downloads/
+      - downloads:/downloads
 
   celery-remote:
     profiles: ["remote"]
     <<: *backend-service
     image: ghcr.io/jerbob/clipchimp:latest
     volumes:
-      - downloads:/downloads/
+      - downloads:/downloads
 
   redis:
     image: redis:5
