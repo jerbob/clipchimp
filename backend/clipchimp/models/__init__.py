@@ -33,18 +33,18 @@ class DownloadParameters(BaseModel):
                 field = str(error["loc"][0])
                 errors[field] = error["msg"].capitalize()
             data.clear()
-        return super().__init__(**data, errors=errors)
+        super().__init__(**data, errors=errors)
 
-    def __post_init_post_parse__(self) -> None:
-        """Ensure that parameters are valid before extracting timestamps."""
         if not self.post_process:
             # Allow us to instantiate without processing
             return
+
         try:
             metadata = logic.get_ytdl_metadata(self.url)
         except yt_dlp.utils.DownloadError:
             self.errors["url"] = "Invalid video url"
             return
+
         self.download_from = metadata["url"]
         # If a timestamped video link was given, use that start time
         if not self.start:
@@ -66,6 +66,6 @@ class DownloadParameters(BaseModel):
             response[field] = dict(
                 error=bool(message),
                 message=message,
-                value=getattr(self, field),
+                value=str(getattr(self, field)),
             )
         return response
