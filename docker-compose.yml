@@ -25,6 +25,8 @@ services:
     build: frontend
     volumes:
       - ./frontend:/app/src
+    environment:
+      - TRUFFLE_API_KEY=${TRUFFLE_API_KEY}
 
   backend-local:
     profiles: ["local"]
@@ -47,6 +49,8 @@ services:
     profiles: ["remote"]
     <<: *frontend-service
     image: ghcr.io/jerbob/clipchimp-frontend:latest
+    environment:
+      - TRUFFLE_API_KEY=${TRUFFLE_API_KEY}
 
   backend-remote:
     profiles: ["remote"]
