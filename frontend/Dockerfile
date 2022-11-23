@@ -7,4 +7,5 @@ RUN set -ex \
 COPY . /app/src
 WORKDIR /app/src/
 
+ENTRYPOINT ["/app/src/entrypoint.sh"]
 CMD "truffle-cli" "dev"
