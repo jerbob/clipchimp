@@ -63,6 +63,7 @@ services:
     profiles: ["remote"]
     <<: *backend-service
     image: ghcr.io/jerbob/clipchimp:latest
+    command: celery -A clipchimp.tasks worker -l info
     volumes:
       - downloads:/downloads
 
