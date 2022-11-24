@@ -6,61 +6,22 @@ x-backend-service: &backend-service
     - REDIS_PORT=6379
     - REDIS_HOST=redis
 
-x-frontend-service: &frontend-service
-  ports:
-    - 24678:24678
-
-x-nginx-service: &nginx-service
-  build: nginx
-  ports:
-    - 8000:80
-  volumes:
-    - downloads:/downloads
-
 
 services:
-  frontend-local:
-    profiles: ["local"]
-    <<: *frontend-service
-    build: frontend
-    volumes:
-      - ./frontend:/app/src
-    environment:
-      - TRUFFLE_API_KEY=${TRUFFLE_API_KEY}
-
-  backend-local:
-    profiles: ["local"]
-    <<: *backend-service
-    build: backend
-    volumes:
-      - downloads:/downloads
-      - ./backend:/app/src
-
-  celery-local:
-    profiles: ["local"]
-    <<: *backend-service
-    build: backend
-    command: celery -A clipchimp.tasks worker -l info
-    volumes:
-      - downloads:/downloads
-      - ./backend:/app/src
-
-  frontend-remote:
-    profiles: ["remote"]
-    <<: *frontend-service
+  frontend:
+    ports:
+      - 24678:24678
     image: ghcr.io/jerbob/clipchimp-frontend:latest
     environment:
       - TRUFFLE_API_KEY=${TRUFFLE_API_KEY}
 
-  backend-remote:
-    profiles: ["remote"]
+  backend:
     <<: *backend-service
     image: ghcr.io/jerbob/clipchimp:latest
     volumes:
       - downloads:/downloads
 
-  celery-remote:
-    profiles: ["remote"]
+  celery:  
     <<: *backend-service
     image: ghcr.io/jerbob/clipchimp:latest
     command: celery -A clipchimp.tasks worker -l info
@@ -70,24 +31,18 @@ services:
   redis:
     image: redis:5
 
-  nginx-local:
-    profiles: ["local"]
-    <<: *nginx-service
+  nginx:
+    build: nginx
+    ports:
+      - 8000:80
+    volumes:
+      - downloads:/downloads
     environment:
-      - BACKEND_HOST=backend-local
-      - FRONTEND_HOST=frontend-local
-      - PUBLIC_HOST=${PUBLIC_HOST:-localhost}
-
-  nginx-remote:
-    profiles: ["remote"]
-    <<: *nginx-service
-    environment:
-      - BACKEND_HOST=backend-remote
-      - FRONTEND_HOST=frontend-remote
+      - BACKEND_HOST=backend
+      - FRONTEND_HOST=frontend
       - PUBLIC_HOST=${PUBLIC_HOST:-clipchimp.jerbob.me}
 
   watchtower:
-    profiles: ["remote"]
     image: docker.io/containrrr/watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
