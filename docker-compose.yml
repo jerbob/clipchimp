@@ -42,13 +42,6 @@ services:
       - FRONTEND_HOST=frontend
       - PUBLIC_HOST=${PUBLIC_HOST:-clipchimp.jerbob.me}
 
-  watchtower:
-    image: docker.io/containrrr/watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /root/.docker/config.json:/config.json
-    command: --interval 5
-
 
 volumes:
   downloads:
