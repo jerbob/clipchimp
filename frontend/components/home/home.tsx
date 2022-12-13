@@ -49,7 +49,7 @@ function ExtensionMapping() {
       end: formData.end
     })
     fetch(
-      "/api/validate?" + new URLSearchParams(
+      "https://jerbob-clips-backend.sporocarp.dev/api/validate?" + new URLSearchParams(
         {url: event.target.value, start: formData.start.value, end: formData.end.value}
       )
     ).then((response) => response.json()).then(
@@ -62,7 +62,7 @@ function ExtensionMapping() {
   function handleSubmit(event) {
     event.preventDefault();
     fetch(
-      "/api/download?" + new URLSearchParams(
+      "https://jerbob-clips-backend.sporocarp.dev/api/download?" + new URLSearchParams(
         {url: formData.url.value, start: formData.start.value, end: formData.end.value}
       )
     ).then((response) => response.json()).then((downloadTask) => {
@@ -75,7 +75,7 @@ function ExtensionMapping() {
               return
             }
             fetch(
-              "/api/status?" + new URLSearchParams(
+              "https://jerbob-clips-backend.sporocarp.dev/api/status?" + new URLSearchParams(
                 {task: downloadTask.id}
               )
             ).then((response) => response.json()).then((downloadStatus) => {
