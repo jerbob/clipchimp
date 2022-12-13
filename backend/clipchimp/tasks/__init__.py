@@ -23,7 +23,6 @@ def download_segment(url: str, start: timedelta, end: timedelta) -> None:
     params = DownloadParameters(url=url, start=start, end=end, post_process=False)  # type: ignore
     command = [
         "yt-dlp",
-        "--force-keyframes-at-cuts",
         "--download-sections",
         f"*{start}-{end}",
         url,
