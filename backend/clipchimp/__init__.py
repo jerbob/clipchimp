@@ -3,6 +3,7 @@ from pathlib import Path
 
 from celery.result import AsyncResult
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from clipchimp import tasks
 from clipchimp.models import DownloadParameters
@@ -13,6 +14,7 @@ DOWNLOADS = Path("/downloads/").absolute()
 DELTA_PATTERN = re.compile(r"(\d+:)?(\d+:)?\d+")
 
 app = FastAPI()
+app.mount("/downloads", StaticFiles(directory=DOWNLOADS), name="downloads")
 
 
 @app.get("/api/validate")
