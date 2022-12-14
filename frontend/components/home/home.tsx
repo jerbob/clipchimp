@@ -80,7 +80,10 @@ function ExtensionMapping() {
               )
             ).then((response) => response.json()).then((downloadStatus) => {
               if (downloadStatus.status == "SUCCESS") {
-                setFormStatus({loading: false, download: downloadStatus.download})
+                setFormStatus({
+                  loading: false,
+                  download: "https://jerbob-clips-backend.sporocarp.dev" + downloadStatus.download
+                })
                 window.loading = false;
               }
             })
