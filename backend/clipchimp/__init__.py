@@ -1,28 +1,14 @@
-import re
-from pathlib import Path
-
 from celery.result import AsyncResult
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from clipchimp import tasks
+from clipchimp.config import DELTA_PATTERN, DOWNLOADS, ZERO_SECONDS
 from clipchimp.models import DownloadParameters
 
 
-ZERO_SECONDS = "0:00:00"
-DOWNLOADS = Path("/downloads/").absolute()
-DELTA_PATTERN = re.compile(r"(\d+:)?(\d+:)?\d+")
-
 app = FastAPI()
 app.mount("/downloads", StaticFiles(directory=DOWNLOADS), name="downloads")
-app.add_middleware(
-    CORSMiddleware,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    allow_credentials=True,
-    allow_origins=["clipchimp.jerbob.me", "*.sporocarp.dev", "localhost"],
-)
 
 
 @app.get("/api/validate")

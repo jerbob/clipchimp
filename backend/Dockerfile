@@ -23,6 +23,6 @@ CMD "gunicorn" \
   "--reload" \
   "--chdir=/app/src/" \
   "--bind=0.0.0.0:8000" \
-  "--worker-class=uvicorn.workers.UvicornWorker" \
+  "--worker-class=clipchimp.config.CustomWorker" \
   "--workers=12" \
   "clipchimp:app"
