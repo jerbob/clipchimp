@@ -107,7 +107,7 @@ function ExtensionMapping() {
         </div>
       </div>
 
-      <img src="/clip_downloader_logo.svg" />
+      <img src="https://github.com/jerbob/clipchimp/raw/main/frontend/public/clip_downloader_logo.svg" />
       <p class="header">Download Youtube <br/>video clips</p>
 
       <div class="form-container" className={`form-container${formStatus.loading ? " loading-form": ""}`}>
@@ -149,7 +149,7 @@ function ExtensionMapping() {
 
       <div class="row">
         <div class="column" id="credits-container">
-          <img class="logomark" src="/logomark.svg" />
+          <img class="logomark" src="https://github.com/jerbob/clipchimp/raw/main/frontend/public/logomark.svg" />
         </div>
         <div class="column">
           <p class="credits">Powered by <a href="https://truffle.vip">Truffle</a></p>
