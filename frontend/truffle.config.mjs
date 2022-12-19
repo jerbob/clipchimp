@@ -1,7 +1,7 @@
 export default {
-  name: "@early-access-jerbob/clipchimp",
-  version: "0.6.3",
-  apiUrl: "https://mycelium.staging.bio/graphql",
+  name: "@jerbob/clipchimp",
+  version: "0.6.4",
+  apiUrl: "https://mycelium.truffle.vip/graphql",
   requestedPermissions: [],
   installActionRel: {},
 }
