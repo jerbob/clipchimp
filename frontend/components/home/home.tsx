@@ -152,7 +152,7 @@ function ExtensionMapping() {
           <img class="logomark" src="https://github.com/jerbob/clipchimp/raw/main/frontend/public/logomark.svg" />
         </div>
         <div class="column">
-          <p class="credits">Powered by <a href="https://truffle.vip">Truffle</a></p>
+          <p class="credits">Built with <a href="https://truffle.vip">Truffle</a> by <a class="personal-link" href="https://jerbob.me">jerbob</a></p>
         </div>
       </div>
     </div>

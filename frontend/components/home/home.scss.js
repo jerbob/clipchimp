@@ -145,6 +145,11 @@ a:link {
   color: #F357A1;
 }
 
+a.personal-link {
+  color: #363636 !important;
+  text-decoration-style: dashed !important;
+}
+
 a:visited {
   color: #F357A1;
 }
