@@ -2,31 +2,28 @@ version: "3.8"
 
 
 x-backend-service: &backend-service
+  build: backend
   environment:
     - REDIS_PORT=6379
     - REDIS_HOST=redis
+  volumes:
+    - downloads:/downloads
 
 
 services:
   frontend:
     ports:
       - 24678:24678
-    image: ghcr.io/jerbob/clipchimp-frontend:latest
+    build: frontend
     environment:
       - TRUFFLE_API_KEY=${TRUFFLE_API_KEY}
 
   backend:
     <<: *backend-service
-    image: ghcr.io/jerbob/clipchimp:latest
-    volumes:
-      - downloads:/downloads
 
   celery:  
     <<: *backend-service
-    image: ghcr.io/jerbob/clipchimp:latest
     command: celery -A clipchimp.tasks worker -l info
-    volumes:
-      - downloads:/downloads
 
   redis:
     image: redis:5
