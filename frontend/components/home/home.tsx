@@ -20,6 +20,8 @@ function ExtensionMapping() {
     backendURL = "http://localhost:8000"
   }
 
+  var nanobar = new Nanobar();
+
   function handleStartUpdate(event) {
     setFormData({
       url: formData.url,
@@ -67,10 +69,6 @@ function ExtensionMapping() {
 
   function handleSubmit(event) {
     event.preventDefault();
-
-    var nanobar = new Nanobar();
-    nanobar.go(0.1);
-
     fetch(
       `${backendURL}/api/download?` + new URLSearchParams(
         {url: formData.url.value, start: formData.start.value, end: formData.end.value}
@@ -79,7 +77,8 @@ function ExtensionMapping() {
       if (downloadTask.status == "PENDING" || downloadTask.status == "SUCCESS") {
         setFormStatus({loading: true, download: ""});
         window.loading = true;
-        setInterval(
+        clearInterval(window.downloadInterval);
+        window.downloadInterval = setInterval(
           () => {
             if (!window.loading) { return }
             fetch(
