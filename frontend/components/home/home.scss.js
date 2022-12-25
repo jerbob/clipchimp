@@ -5,6 +5,11 @@ export default scss`
   border: 2px solid #F34444 !important;
 }
 
+#nanobar > .bar {
+  background-image: linear-gradient(90.73deg, rgb(238, 180, 103) 2.74%, rgb(248, 99, 156) 100%) !important;
+  height: 150% !important;
+}
+
 .error-message {
   top: -1.5rem;
   position: relative;
@@ -32,6 +37,7 @@ export default scss`
   z-index: 999;
   left: 48vw;
   top: 32rem;
+  display: none;
 }
 
 @keyframes spin {

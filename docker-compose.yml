@@ -16,6 +16,7 @@ services:
       - 24678:24678
     build: frontend
     environment:
+      - BACKEND_URL=http://localhost:8000
       - TRUFFLE_API_KEY=${TRUFFLE_API_KEY}
 
   backend:

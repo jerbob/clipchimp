@@ -1,5 +1,6 @@
 import React, { useState } from "https://npm.tfl.dev/react";
 import Helmet from "https://npm.tfl.dev/react-helmet@6.1.0";
+import Nanobar from "https://npm.tfl.dev/v86/nanobar@0.4.2/es2020/nanobar.js";
 import { useStyleSheet } from "https://tfl.dev/@truffle/distribute@^2.0.5/format/wc/react/index.ts";
 
 import styleSheet from "./home.scss.js";
@@ -13,6 +14,11 @@ function ExtensionMapping() {
     end: {error: false, message: "", value: ""}
   })
   const [formStatus, setFormStatus] = useState({loading: false, download: ""});
+
+  let backendURL = "https://jerbob-clips-backend.sporocarp.dev";
+  if (window.location.hostname == "localhost") {
+    backendURL = "http://localhost:8000"
+  }
 
   function handleStartUpdate(event) {
     setFormData({
@@ -49,7 +55,7 @@ function ExtensionMapping() {
       end: formData.end
     })
     fetch(
-      "https://jerbob-clips-backend.sporocarp.dev/api/validate?" + new URLSearchParams(
+      `${backendURL}/api/validate?` + new URLSearchParams(
         {url: event.target.value, start: formData.start.value, end: formData.end.value}
       )
     ).then((response) => response.json()).then(
@@ -61,8 +67,12 @@ function ExtensionMapping() {
 
   function handleSubmit(event) {
     event.preventDefault();
+
+    var nanobar = new Nanobar();
+    nanobar.go(0.1);
+
     fetch(
-      "https://jerbob-clips-backend.sporocarp.dev/api/download?" + new URLSearchParams(
+      `${backendURL}/api/download?` + new URLSearchParams(
         {url: formData.url.value, start: formData.start.value, end: formData.end.value}
       )
     ).then((response) => response.json()).then((downloadTask) => {
@@ -71,20 +81,20 @@ function ExtensionMapping() {
         window.loading = true;
         setInterval(
           () => {
-            if (!window.loading) {
-              return
-            }
+            if (!window.loading) { return }
             fetch(
-              "https://jerbob-clips-backend.sporocarp.dev/api/status?" + new URLSearchParams(
+              `${backendURL}/api/status?` + new URLSearchParams(
                 {task: downloadTask.id}
               )
             ).then((response) => response.json()).then((downloadStatus) => {
+              nanobar.go(downloadStatus.progress * 100);
               if (downloadStatus.status == "SUCCESS") {
                 setFormStatus({
                   loading: false,
-                  download: "https://jerbob-clips-backend.sporocarp.dev" + downloadStatus.download
+                  download: backendURL + downloadStatus.download
                 })
                 window.loading = false;
+                window.location.href = backendURL + downloadStatus.download;
               }
             })
           }, 1000)
@@ -99,13 +109,13 @@ function ExtensionMapping() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet" />
+        <style type="text/css">{`
+          .bar{
+            background-image: linear-gradient(90.73deg, rgb(238, 180, 103) 2.74%, rgb(248, 99, 156) 100%);
+            height: 150%;
+          }
+        `}</style>
       </Helmet>
-
-      <div id="myModal" class="modal" className={`modal${formStatus.download ? "": " hidden"}`}>
-        <div class="modal-content">
-          <a id="download-link" href={`${formStatus.download}`} download="clip.webm">Save clip</a>
-        </div>
-      </div>
 
       <img src="https://github.com/jerbob/clipchimp/raw/main/frontend/public/clip_downloader_logo.svg" />
       <p class="header">Download Youtube <br/>video clips</p>
@@ -143,7 +153,7 @@ function ExtensionMapping() {
               <p class="error-message">{formData.end.message}</p>
             </div>
           </div>
-          <input type="submit" value="Download clip" id="download" />
+          <input type="submit" value={`${formStatus.loading ? "Processing...": "Download clip"}`} id="download"/>
         </form>
       </div>
 
