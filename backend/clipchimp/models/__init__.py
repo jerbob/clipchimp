@@ -2,10 +2,10 @@ import hashlib
 import logging
 import re
 from datetime import timedelta
-from typing import Dict
+from typing import Dict, Optional
 
 import yt_dlp
-from pydantic import validate_model, BaseModel, Field
+from pydantic import validate_arguments, validate_model, BaseModel, Field
 
 from clipchimp import logic
 
@@ -69,3 +69,11 @@ class DownloadParameters(BaseModel):
                 value=str(getattr(self, field)),
             )
         return response
+
+    @validate_arguments
+    def get_progress(self, newest_time: Optional[timedelta]) -> Optional[float]:
+        if newest_time is None:
+            return
+
+        progress = newest_time / self.end
+        return progress if progress <= 1 else 1.0

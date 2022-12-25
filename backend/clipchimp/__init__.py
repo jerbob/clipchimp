@@ -1,14 +1,13 @@
 from celery.result import AsyncResult
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 from clipchimp import tasks
-from clipchimp.config import DELTA_PATTERN, DOWNLOADS, ZERO_SECONDS
+from clipchimp.config import DELTA_PATTERN, DOWNLOADS, ZERO_SECONDS, DownloadsMount
 from clipchimp.models import DownloadParameters
 
 
 app = FastAPI()
-app.mount("/downloads", StaticFiles(directory=DOWNLOADS), name="downloads")
+app.mount("/downloads", DownloadsMount(), name="downloads")
 
 
 @app.get("/api/validate")
@@ -19,9 +18,9 @@ async def validate(
 ) -> dict:
     """Validate the provided parameters and return a normalised URL."""
     # Ensure that the provided start and end are valid
-    if not (DELTA_PATTERN.match(start)):
+    if not DELTA_PATTERN.match(start):
         start = ZERO_SECONDS
-    if not (DELTA_PATTERN.match(end)):
+    if not DELTA_PATTERN.match(end):
         end = ZERO_SECONDS
     return DownloadParameters(url=url, start=start, end=end).json()  # type: ignore
 
@@ -44,9 +43,18 @@ async def download(
 async def status(task: str) -> dict:
     """Given a task ID, check on progress of the download."""
     result = AsyncResult(task, app=tasks.app)
-    response = {"status": result.state}
+    response = {
+        "status": result.state,
+        "progress": 0,
+    }
+    metadata = result.info or {}
+    if "progress" in metadata:
+        response["progress"] = metadata["progress"]
+
     if result.state == "SUCCESS":
         for file in DOWNLOADS.glob(f"{task}.*"):
-            if file.suffix != ".part":
-                response["download"] = str(file)
+            if file.suffix == ".part":
+                continue
+            # File must be fully downloaded
+            response["download"] = str(file)
     return response
