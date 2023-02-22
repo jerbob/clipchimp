@@ -18,8 +18,8 @@ celery = {extras = ["redis"], version = "^5.2.7"}
 httpx = {extras = ["http2"], version = "^0.23.0"}
 hyperframe = {git = "https://github.com/python-hyper/hyperframe.git", rev = "554fcad68beffae57dc8335ed5e02c177bfd6000"}
 h2 = {git = "https://github.com/python-hyper/h2.git", rev = "63b6b97e691334464a57f933bfd7ed444f364708"}
-yt-dlp = {git = "https://github.com/yt-dlp/yt-dlp.git"}
 redis-lru = "^0.1.2"
+yt-dlp = {git = "https://github.com/yt-dlp/yt-dlp.git"}
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.5.0"
