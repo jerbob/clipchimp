@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 RUN set -ex \
   && apt-get update \
-  && apt-get install -y curl ffmpeg \
+  && apt-get install -y curl ffmpeg git \
   && rm -rf /var/lib/apt/lists/* \
   && curl -sSL 'https://install.python-poetry.org' | python \
   && poetry config virtualenvs.create false
@@ -18,6 +18,8 @@ WORKDIR /app/src
 RUN poetry install --no-root --no-interaction --no-dev
 
 COPY . /app/src/
+
+ENTRYPOINT [ "/app/src/entrypoint.sh" ]
 
 CMD "gunicorn" \
   "--reload" \
